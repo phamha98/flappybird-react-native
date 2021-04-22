@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Ionicons } from "react-native-vector-icons";
+import { Audio } from "expo-av";
+
 import {
   StyleSheet,
   Text,
@@ -29,15 +31,18 @@ export default function App() {
   const [score, setScore] = useState(0);
   const [lever, setLever] = useState(100);
   const [isStart, setIsStart] = useState(true);
+  const [sound, setSound] = useState();
+  const [stateBird, setStateBird] = useState(false);
   let obstaclesWidth = 60;
   let obstaclesHeight = 300;
   let gap = 200;
-  const [gravity, setGravity] = useState(3);
+  const [gravity, setGravity] = useState(5);
 
   let gameTimerId;
   let obstaclesTimerid;
   let obstaclesTimeridTwo;
-  //start bird falling
+  let birdWing;
+  //BIRD
   useEffect(() => {
     if (birdBottom > 0) {
       gameTimerId = setInterval(() => {
@@ -59,16 +64,16 @@ export default function App() {
       };
     } else {
       setScore((score) => score + 1);
-      if (score > 4) {
-        setLever(300);
-        setGravity(8);
-        setJump1(50);
-      }
-      if (score > 10) {
-        setLever(500);
-        setGravity(8);
-        setJump1(80);
-      }
+      // if (score > 4) {
+      //   setLever(300);
+      //   setGravity(8);
+      //   setJump1(50);
+      // }
+      // if (score > 10) {
+      //   setLever(500);
+      //   setGravity(8);
+      //   setJump1(80);
+      // }
       setObstaclesLeft(screenWidth);
       setObstaclesNegHeight(-Math.random() * lever);
     }
@@ -84,16 +89,16 @@ export default function App() {
       };
     } else {
       setScore((score) => score + 1);
-      if (score > 4) {
-        setLever(300);
-        setGravity(8);
-        setJump1(50);
-      }
-      if (score > 10) {
-        setLever(500);
-        setGravity(8);
-        setJump1(80);
-      }
+      // if (score > 4) {
+      //   setLever(300);
+      //   setGravity(8);
+      //   setJump1(50);
+      // }
+      // if (score > 10) {
+      //   setLever(500);
+      //   setGravity(8);
+      //   setJump1(80);
+      // }
       setObstaclesLeftTwo(screenWidth);
       setObstaclesNegHeightTwo(-Math.random() * lever);
     }
@@ -118,25 +123,40 @@ export default function App() {
     }
   });
   const gameOver = () => {
+    // playSound(require("./assets/tenten.mp3"))
     clearInterval(gameTimerId);
     clearInterval(obstaclesTimerid);
+    ``;
     clearInterval(obstaclesTimeridTwo);
     setIsGameOver(true);
   };
   const [jump1, setJump1] = useState(20);
   const jump = () => {
     if (!isGameOver && birdBottom < screenHeight) {
+     // playSound();
+      setStateBird(!stateBird);
       setBirdBottom((birdBottom) => birdBottom + jump1);
       console.log("jumped");
     }
   };
+  ///wwing
+  // useEffect(() => {
+  //   if (!isGameOver) {
+  //     birdWing = setInterval(() => {
+  //       setStateBird(!stateBird);
+  //     }, 30);
+  //     return () => {
+  //       clearInterval(obstaclesTimerid);
+  //     };
+  //   }
+  // });
   // useEffect(() => {
   //   if (isStart) {
   //     clearInterval(gameTimerId);
   //     clearInterval(obstaclesTimerid);
   //     clearInterval(obstaclesTimeridTwo);
   //   }
-   
+
   // });
   const ViewGameOver = ({ chim }) => {
     if (isGameOver)
@@ -188,7 +208,6 @@ export default function App() {
     );
   };
   const chim = () => {
-   
     setBirdBottom(screenHeight / 2);
     setObstaclesLeft(screenWidth);
     setObstaclesLeftTwo(screenWidth + screenWidth / 2 + 30);
@@ -207,6 +226,24 @@ export default function App() {
     }
     return color;
   }
+
+  async function playSound() {
+    console.log("Loading Sound");
+    const { sound } = await Audio.Sound.createAsync(require("./assets/pewcut.mp3"));
+    setSound(sound);
+
+    console.log("Playing Sound");
+    await sound.playAsync();
+  }
+  useEffect(() => {
+    return sound
+      ? () => {
+          console.log("Unloading Sound");
+          sound.unloadAsync();
+        }
+      : undefined;
+  }, [sound]);
+
   return (
     <TouchableWithoutFeedback onPress={jump}>
       <View style={styles.container}>
@@ -215,7 +252,11 @@ export default function App() {
           source={require("./src/img/background.png")}
           style={{ flex: 1 }}
         >
-          <Bird birdBottom={birdBottom} birdLeft={birdLeft} />
+          <Bird
+            birdBottom={birdBottom}
+            birdLeft={birdLeft}
+            stateBird={stateBird}
+          />
           <Obstacles
             obstaclesHeight={obstaclesHeight}
             obstaclesLeft={obstaclesLeft}
@@ -279,7 +320,6 @@ export default function App() {
               <Text style={{ fontSize: 60, color: "green" }}>{score}</Text>
             </View>
           )}
-         
         </ImageBackground>
       </View>
     </TouchableWithoutFeedback>
